@@ -85,6 +85,7 @@ jobs:
 
       - run: sbt scalafmtCheckAll
       - run: sbt headerCheckAll
+      - run: sbt releaseEarlyCheckRequirements
       - run: sbt +test:compile
 
       - persist_to_workspace:
@@ -141,7 +142,7 @@ jobs:
           at: .
       - restore_sbt_cache
       - run:
-          command: sbt +publish
+          command: sbt +releaseEarly
           no_output_timeout: 20m
 
 workflows:
@@ -171,6 +172,5 @@ workflows:
               only: master
 
       - release:
-          context: comms-internal-build
           requires:
             - tag
