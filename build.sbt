@@ -1,6 +1,6 @@
-lazy val additionalSupportedScalaVersions = List("2.12.11")
+import ReleaseTransformations._
 
-ThisBuild / dynverVTagPrefix := false
+lazy val additionalSupportedScalaVersions = List("2.12.11")
 
 lazy val root = (project in file("."))
   .settings(
@@ -25,7 +25,6 @@ lazy val root = (project in file("."))
 lazy val commonSettings = Seq(
   organization := "com.ovoenergy",
   scalaVersion := "2.13.1",
-  dynverVTagPrefix := false,
   crossScalaVersions ++= additionalSupportedScalaVersions,
   organizationName := "OVO Energy",
   organizationHomepage := Some(url("https://www.ovoenergy.com/")),
@@ -53,17 +52,23 @@ lazy val commonSettings = Seq(
 )
 
 lazy val publishSettings = Seq(
-  ThisBuild / bintrayOrganization := Some("ovotech"),
-  ThisBuild / bintrayRepository := "maven",
-  ThisBuild / bintrayPackageLabels := Seq(
-    "cats-effect",
-    "micrometer",
-    "metrics",
-    "scala"
-  ),
-  ThisBuild / releaseEarlyWith := BintrayPublisher,
-  ThisBuild / releaseEarlyNoGpg := true,
-  ThisBuild / releaseEarlyEnableSyncToMaven := false
+  publishTo := sonatypePublishToBundle.value,
+  sonatypeProfileName := "com.ovoenergy",
+  publishMavenStyle := true,
+  releaseProcess := Seq[ReleaseStep](
+    checkSnapshotDependencies,
+    inquireVersions,
+    runClean,
+    runTest,
+    setReleaseVersion,
+    commitReleaseVersion,
+    tagRelease,
+    releaseStepCommandAndRemaining("+publishSigned"),
+    releaseStepCommand("sonatypeBundleRelease"),
+    setNextVersion,
+    commitNextVersion,
+    pushChanges
+  )
 )
 
 lazy val commonDependencies = Seq(
