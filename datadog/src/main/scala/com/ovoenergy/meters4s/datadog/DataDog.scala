@@ -67,7 +67,7 @@ package object DataDog {
       override val uri = c.uri
       override val descriptions = c.descriptions
       override val hostTag = c.hostTag.orNull
-      override val batchSize = c.batchSize.orNull
+      override val batchSize = c.batchSize.getOrElse(10000)
       // The parent of DatadogConfig need this abstract method to return null
       // to apply the default value
       def get(id: String): String = null
