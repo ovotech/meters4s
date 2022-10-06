@@ -20,7 +20,10 @@ import cats.effect.{Async, Resource, Sync}
 import cats.implicits._
 import com.ovoenergy.meters4s.{MetricsConfig, Reporter}
 import io.micrometer.core.instrument.MeterRegistry
-import io.micrometer.datadog.{DatadogMeterRegistry, DatadogConfig => MmDatadogConfig}
+import io.micrometer.datadog.{
+  DatadogMeterRegistry,
+  DatadogConfig => MmDatadogConfig
+}
 
 import scala.concurrent.duration._
 
@@ -41,7 +44,7 @@ case class DataDogConfig(
     applicationKey: Option[String] = None,
     descriptions: Boolean = false,
     hostTag: Option[String] = None,
-    batchSize: Option[Int] = None,
+    batchSize: Option[Int] = None
 )
 
 package object DataDog {
