@@ -38,7 +38,7 @@ lazy val root = (project in file("."))
 
 lazy val commonSettings = Seq(
   organization := "com.ovoenergy",
-  scalaVersion := "3.2.0",
+  scalaVersion := "3.1.3",
   crossScalaVersions ++= additionalSupportedScalaVersions,
   organizationName := "OVO Energy",
   organizationHomepage := Some(url("https://www.ovoenergy.com/")),
