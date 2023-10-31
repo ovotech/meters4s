@@ -28,7 +28,8 @@ class MicrometerServerMetricsSuite extends munit.CatsEffectSuite {
           val metrics = Meters4s[IO](reporter)
 
           val stubRoutes = HttpRoutes.of[IO](stub)
-          val meteredStubRoutes = Metrics[IO](metrics, classifierF = classifierF)(stubRoutes)
+          val meteredStubRoutes =
+            Metrics[IO](metrics, classifierF = classifierF)(stubRoutes)
 
           (registry, meteredStubRoutes)
         }
@@ -81,7 +82,10 @@ class MicrometerServerMetricsSuite extends munit.CatsEffectSuite {
       intercept[MeterNotFoundException] {
         meterCount(
           registry,
-          Timer(s"server.${classifier}.response-time", additionalTags and Tags.of("status-code", x))
+          Timer(
+            s"server.${classifier}.response-time",
+            additionalTags and Tags.of("status-code", x)
+          )
         )
       }
     }
@@ -90,7 +94,10 @@ class MicrometerServerMetricsSuite extends munit.CatsEffectSuite {
       intercept[MeterNotFoundException] {
         meterCount(
           registry,
-          Timer(s"server.${classifier}.response-time", additionalTags and Tags.of("method", x))
+          Timer(
+            s"server.${classifier}.response-time",
+            additionalTags and Tags.of("method", x)
+          )
         )
       }
 
@@ -109,7 +116,10 @@ class MicrometerServerMetricsSuite extends munit.CatsEffectSuite {
       intercept[MeterNotFoundException] {
         meterCount(
           registry,
-          Timer(s"server.${classifier}.response-time", additionalTags and Tags.of("termination", x))
+          Timer(
+            s"server.${classifier}.response-time",
+            additionalTags and Tags.of("termination", x)
+          )
         )
       }
     }
@@ -117,7 +127,14 @@ class MicrometerServerMetricsSuite extends munit.CatsEffectSuite {
     val responseTimeTags = if (termination != "normal") {
       Tags.of("termination", termination)
     } else {
-      Tags.of("status-code", statusCode, "method", method, "termination", termination)
+      Tags.of(
+        "status-code",
+        statusCode,
+        "method",
+        method,
+        "termination",
+        termination
+      )
     }
 
     assertEquals(
@@ -199,133 +216,151 @@ class MicrometerServerMetricsSuite extends munit.CatsEffectSuite {
 
   resources.test(
     "Http routes with a micrometer metrics middleware should register a 2xx response"
-  ) { case (registry, meteredRoutes) =>
-    meteredRoutes
-      .orNotFound(Request[IO](uri = uri"/ok"))
-      .flatMap(r => r.bodyText.compile.lastOrError.as(r.status))
-      .assertEquals(Status.Ok)
-      .flatMap(_ => IO(testMetersFor(registry, "get", "2xx")))
+  ) {
+    case (registry, meteredRoutes) =>
+      meteredRoutes
+        .orNotFound(Request[IO](uri = uri"/ok"))
+        .flatMap(r => r.bodyText.compile.lastOrError.as(r.status))
+        .assertEquals(Status.Ok)
+        .flatMap(_ => IO(testMetersFor(registry, "get", "2xx")))
   }
 
   resources.test(
     "Http routes with a micrometer metrics middleware should register a 4xx response"
-  ) { case (registry, meteredRoutes) =>
-    meteredRoutes
-      .orNotFound(Request[IO](uri = uri"/bad-request"))
-      .flatMap(r => r.bodyText.compile.lastOrError.as(r.status))
-      .assertEquals(Status.BadRequest)
-      .flatMap(_ => IO(testMetersFor(registry, "get", "4xx")))
+  ) {
+    case (registry, meteredRoutes) =>
+      meteredRoutes
+        .orNotFound(Request[IO](uri = uri"/bad-request"))
+        .flatMap(r => r.bodyText.compile.lastOrError.as(r.status))
+        .assertEquals(Status.BadRequest)
+        .flatMap(_ => IO(testMetersFor(registry, "get", "4xx")))
   }
 
   resources.test(
     "Http routes with a micrometer metrics middleware should register a 5xx response"
-  ) { case (registry, meteredRoutes) =>
-    meteredRoutes
-      .orNotFound(Request[IO](uri = uri"/internal-server-error"))
-      .flatMap(r => r.bodyText.compile.lastOrError.as(r.status))
-      .assertEquals(Status.InternalServerError)
-      .flatMap(_ => IO(testMetersFor(registry, "get", "5xx")))
+  ) {
+    case (registry, meteredRoutes) =>
+      meteredRoutes
+        .orNotFound(Request[IO](uri = uri"/internal-server-error"))
+        .flatMap(r => r.bodyText.compile.lastOrError.as(r.status))
+        .assertEquals(Status.InternalServerError)
+        .flatMap(_ => IO(testMetersFor(registry, "get", "5xx")))
 
   }
 
   resources.test(
     "Http routes with a micrometer metrics middleware should register a POST request"
-  ) { case (registry, meteredRoutes) =>
-    meteredRoutes
-      .orNotFound(Request[IO](method = POST, uri = uri"/ok"))
-      .flatMap(r => r.bodyText.compile.lastOrError.as(r.status))
-      .assertEquals(Status.Ok)
-      .flatMap(_ => IO(testMetersFor(registry, "post", "2xx")))
+  ) {
+    case (registry, meteredRoutes) =>
+      meteredRoutes
+        .orNotFound(Request[IO](method = POST, uri = uri"/ok"))
+        .flatMap(r => r.bodyText.compile.lastOrError.as(r.status))
+        .assertEquals(Status.Ok)
+        .flatMap(_ => IO(testMetersFor(registry, "post", "2xx")))
   }
 
   resources.test(
     "Http routes with a micrometer metrics middleware should register a PUT request"
-  ) { case (registry, meteredRoutes) =>
-    meteredRoutes
-      .orNotFound(Request[IO](method = PUT, uri = uri"/ok"))
-      .flatMap(r => r.bodyText.compile.lastOrError.as(r.status))
-      .assertEquals(Status.Ok)
-      .flatMap(_ => IO(testMetersFor(registry, "put", "2xx")))
+  ) {
+    case (registry, meteredRoutes) =>
+      meteredRoutes
+        .orNotFound(Request[IO](method = PUT, uri = uri"/ok"))
+        .flatMap(r => r.bodyText.compile.lastOrError.as(r.status))
+        .assertEquals(Status.Ok)
+        .flatMap(_ => IO(testMetersFor(registry, "put", "2xx")))
   }
 
   resources.test(
     "Http routes with a micrometer metrics middleware should register a PATCH request"
-  ) { case (registry, meteredRoutes) =>
-    meteredRoutes
-      .orNotFound(Request[IO](method = PATCH, uri = uri"/ok"))
-      .flatMap(r => r.bodyText.compile.lastOrError.as(r.status))
-      .assertEquals(Status.Ok)
-      .flatMap(_ => IO(testMetersFor(registry, "patch", "2xx")))
+  ) {
+    case (registry, meteredRoutes) =>
+      meteredRoutes
+        .orNotFound(Request[IO](method = PATCH, uri = uri"/ok"))
+        .flatMap(r => r.bodyText.compile.lastOrError.as(r.status))
+        .assertEquals(Status.Ok)
+        .flatMap(_ => IO(testMetersFor(registry, "patch", "2xx")))
   }
 
   resources.test(
     "Http routes with a micrometer metrics middleware should register a DELETE request"
-  ) { case (registry, meteredRoutes) =>
-    meteredRoutes
-      .orNotFound(Request[IO](method = DELETE, uri = uri"/ok"))
-      .flatMap(r => r.bodyText.compile.lastOrError.as(r.status))
-      .assertEquals(Status.Ok)
-      .flatMap(_ => IO(testMetersFor(registry, "delete", "2xx")))
+  ) {
+    case (registry, meteredRoutes) =>
+      meteredRoutes
+        .orNotFound(Request[IO](method = DELETE, uri = uri"/ok"))
+        .flatMap(r => r.bodyText.compile.lastOrError.as(r.status))
+        .assertEquals(Status.Ok)
+        .flatMap(_ => IO(testMetersFor(registry, "delete", "2xx")))
   }
 
   resources.test(
     "Http routes with a micrometer metrics middleware should register a HEAD request"
-  ) { case (registry, meteredRoutes) =>
-    meteredRoutes
-      .orNotFound(Request[IO](method = HEAD, uri = uri"/ok"))
-      .flatMap(r => r.bodyText.compile.lastOrError.as(r.status))
-      .assertEquals(Status.Ok)
-      .flatMap(_ => IO(testMetersFor(registry, "head", "2xx")))
+  ) {
+    case (registry, meteredRoutes) =>
+      meteredRoutes
+        .orNotFound(Request[IO](method = HEAD, uri = uri"/ok"))
+        .flatMap(r => r.bodyText.compile.lastOrError.as(r.status))
+        .assertEquals(Status.Ok)
+        .flatMap(_ => IO(testMetersFor(registry, "head", "2xx")))
   }
 
   resources.test(
     "Http routes with a micrometer metrics middleware should register a OPTIONS request"
-  ) { case (registry, meteredRoutes) =>
-    meteredRoutes
-      .orNotFound(Request[IO](method = OPTIONS, uri = uri"/ok"))
-      .flatMap(r => r.bodyText.compile.lastOrError.as(r.status))
-      .assertEquals(Status.Ok)
-      .flatMap(_ => IO(testMetersFor(registry, "options", "2xx")))
+  ) {
+    case (registry, meteredRoutes) =>
+      meteredRoutes
+        .orNotFound(Request[IO](method = OPTIONS, uri = uri"/ok"))
+        .flatMap(r => r.bodyText.compile.lastOrError.as(r.status))
+        .assertEquals(Status.Ok)
+        .flatMap(_ => IO(testMetersFor(registry, "options", "2xx")))
   }
 
   resources.test(
     "Http routes with a micrometer metrics middleware should register an error"
-  ) { case (registry, meteredRoutes) =>
-    meteredRoutes
-      .orNotFound(Request[IO](uri = uri"/error"))
-      .intercept[Throwable]
-      .flatMap(_ => IO(testMetersFor(registry, statusCode = "5xx", termination = "error")))
+  ) {
+    case (registry, meteredRoutes) =>
+      meteredRoutes
+        .orNotFound(Request[IO](uri = uri"/error"))
+        .intercept[Throwable]
+        .flatMap(_ =>
+          IO(testMetersFor(registry, statusCode = "5xx", termination = "error"))
+        )
   }
 
   resources.test(
     "Http routes with a micrometer metrics middleware should register an abnormal termination"
-  ) { case (registry, meteredRoutes) =>
-    meteredRoutes
-      .orNotFound(Request[IO](uri = uri"/abnormal-termination"))
-      .flatMap(resp => resp.body.attempt.compile.lastOrError)
-      .flatMap(_ => IO(testMetersFor(registry, termination = "abnormal")))
+  ) {
+    case (registry, meteredRoutes) =>
+      meteredRoutes
+        .orNotFound(Request[IO](uri = uri"/abnormal-termination"))
+        .flatMap(resp => resp.body.attempt.compile.lastOrError)
+        .flatMap(_ => IO(testMetersFor(registry, termination = "abnormal")))
   }
 
   // // TODO how to simulate a timeout???
 
-  resourcesWithParams(classifierF = (_: Request[IO]) => Some("classifier")).test(
-    "Http routes with a micrometer metrics middleware should use the provided request classifier"
-  ) { case (registry, meteredRoutes) =>
-    meteredRoutes
-      .orNotFound(Request[IO](uri = uri"/ok"))
-      .flatMap(r => r.bodyText.compile.lastOrError.as(r.status))
-      .assertEquals(Status.Ok)
-      .flatMap(_ => IO(testMetersFor(registry, classifier = "classifier")))
-  }
+  resourcesWithParams(classifierF = (_: Request[IO]) => Some("classifier"))
+    .test(
+      "Http routes with a micrometer metrics middleware should use the provided request classifier"
+    ) {
+      case (registry, meteredRoutes) =>
+        meteredRoutes
+          .orNotFound(Request[IO](uri = uri"/ok"))
+          .flatMap(r => r.bodyText.compile.lastOrError.as(r.status))
+          .assertEquals(Status.Ok)
+          .flatMap(_ => IO(testMetersFor(registry, classifier = "classifier")))
+    }
 
   resourcesWithParams(tags = Map("foo" -> "bar")).test(
     "Http routes with a micrometer metrics middleware should tags metrics using global tags"
-  ) { case (registry, meteredRoutes) =>
-    meteredRoutes
-      .orNotFound(Request[IO](uri = uri"/ok"))
-      .flatMap(r => r.bodyText.compile.lastOrError.as(r.status))
-      .assertEquals(Status.Ok)
-      .flatMap(_ => IO(testMetersFor(registry, additionalTags = Tags.of("foo", "bar"))))
+  ) {
+    case (registry, meteredRoutes) =>
+      meteredRoutes
+        .orNotFound(Request[IO](uri = uri"/ok"))
+        .flatMap(r => r.bodyText.compile.lastOrError.as(r.status))
+        .assertEquals(Status.Ok)
+        .flatMap(_ =>
+          IO(testMetersFor(registry, additionalTags = Tags.of("foo", "bar")))
+        )
   }
 
   resourcesWithParams(
@@ -333,20 +368,22 @@ class MicrometerServerMetricsSuite extends munit.CatsEffectSuite {
     classifierF = (_: Request[IO]) => Some("classifier[bar:bazv2,baz:bar]")
   ).test(
     "Http routes with a micrometer metrics middleware should use the provided request classifier to overwrite the tags"
-  ) { case (registry, meteredRoutes) =>
-    meteredRoutes
-      .orNotFound(Request[IO](uri = uri"/ok"))
-      .flatMap(r => r.bodyText.compile.lastOrError.as(r.status))
-      .assertEquals(Status.Ok)
-      .flatMap(_ =>
-        IO(
-          testMetersFor(
-            registry,
-            classifier = "classifier",
-            additionalTags = Tags.of("foo", "bar", "bar", "bazv2", "baz", "bar")
+  ) {
+    case (registry, meteredRoutes) =>
+      meteredRoutes
+        .orNotFound(Request[IO](uri = uri"/ok"))
+        .flatMap(r => r.bodyText.compile.lastOrError.as(r.status))
+        .assertEquals(Status.Ok)
+        .flatMap(_ =>
+          IO(
+            testMetersFor(
+              registry,
+              classifier = "classifier",
+              additionalTags =
+                Tags.of("foo", "bar", "bar", "bazv2", "baz", "bar")
+            )
           )
         )
-      )
   }
 
   resourcesWithParams(
@@ -354,19 +391,21 @@ class MicrometerServerMetricsSuite extends munit.CatsEffectSuite {
     classifierF = (_: Request[IO]) => Some("[bar:bazv2,baz:bar]")
   ).test(
     "Http routes with a micrometer metrics middleware should use the provided request empty classifier to overwrite the tags"
-  ) { case (registry, meteredRoutes) =>
-    meteredRoutes
-      .orNotFound(Request[IO](uri = uri"/ok"))
-      .flatMap(r => r.bodyText.compile.lastOrError.as(r.status))
-      .assertEquals(Status.Ok)
-      .flatMap(_ =>
-        IO(
-          testMetersFor(
-            registry,
-            additionalTags = Tags.of("foo", "bar", "bar", "bazv2", "baz", "bar")
+  ) {
+    case (registry, meteredRoutes) =>
+      meteredRoutes
+        .orNotFound(Request[IO](uri = uri"/ok"))
+        .flatMap(r => r.bodyText.compile.lastOrError.as(r.status))
+        .assertEquals(Status.Ok)
+        .flatMap(_ =>
+          IO(
+            testMetersFor(
+              registry,
+              additionalTags =
+                Tags.of("foo", "bar", "bar", "bazv2", "baz", "bar")
+            )
           )
         )
-      )
   }
 
   resourcesWithParams(
@@ -374,20 +413,21 @@ class MicrometerServerMetricsSuite extends munit.CatsEffectSuite {
     classifierF = (_: Request[IO]) => Some("classifier[]")
   ).test(
     "Http routes with a micrometer metrics middleware should handle classifier with empty tags"
-  ) { case (registry, meteredRoutes) =>
-    meteredRoutes
-      .orNotFound(Request[IO](uri = uri"/ok"))
-      .flatMap(r => r.bodyText.compile.lastOrError.as(r.status))
-      .assertEquals(Status.Ok)
-      .flatMap(_ =>
-        IO(
-          testMetersFor(
-            registry,
-            classifier = "classifier",
-            additionalTags = Tags.of("foo", "bar", "bar", "baz")
+  ) {
+    case (registry, meteredRoutes) =>
+      meteredRoutes
+        .orNotFound(Request[IO](uri = uri"/ok"))
+        .flatMap(r => r.bodyText.compile.lastOrError.as(r.status))
+        .assertEquals(Status.Ok)
+        .flatMap(_ =>
+          IO(
+            testMetersFor(
+              registry,
+              classifier = "classifier",
+              additionalTags = Tags.of("foo", "bar", "bar", "baz")
+            )
           )
         )
-      )
   }
 
   resourcesWithParams(
@@ -395,40 +435,42 @@ class MicrometerServerMetricsSuite extends munit.CatsEffectSuite {
     classifierF = (_: Request[IO]) => Some("classifier")
   ).test(
     "Http routes with a micrometer metrics middleware should handle classifier with no tags"
-  ) { case (registry, meteredRoutes) =>
-    meteredRoutes
-      .orNotFound(Request[IO](uri = uri"/ok"))
-      .flatMap(r => r.bodyText.compile.lastOrError.as(r.status))
-      .assertEquals(Status.Ok)
-      .flatMap(_ =>
-        IO(
-          testMetersFor(
-            registry,
-            classifier = "classifier",
-            additionalTags = Tags.of("foo", "bar", "bar", "baz")
+  ) {
+    case (registry, meteredRoutes) =>
+      meteredRoutes
+        .orNotFound(Request[IO](uri = uri"/ok"))
+        .flatMap(r => r.bodyText.compile.lastOrError.as(r.status))
+        .assertEquals(Status.Ok)
+        .flatMap(_ =>
+          IO(
+            testMetersFor(
+              registry,
+              classifier = "classifier",
+              additionalTags = Tags.of("foo", "bar", "bar", "baz")
+            )
           )
         )
-      )
   }
 
   resourcesWithParams(
     classifierF = (_: Request[IO]) => Some("classifier[ ]")
   ).test(
     "Http routes with a micrometer metrics middleware should handle blank tags"
-  ) { case (registry, meteredRoutes) =>
-    meteredRoutes
-      .orNotFound(Request[IO](uri = uri"/ok"))
-      .flatMap(r => r.bodyText.compile.lastOrError.as(r.status))
-      .assertEquals(Status.Ok)
-      .flatMap(_ =>
-        IO(
-          testMetersFor(
-            registry,
-            classifier = "classifier",
-            additionalTags = Tags.empty
+  ) {
+    case (registry, meteredRoutes) =>
+      meteredRoutes
+        .orNotFound(Request[IO](uri = uri"/ok"))
+        .flatMap(r => r.bodyText.compile.lastOrError.as(r.status))
+        .assertEquals(Status.Ok)
+        .flatMap(_ =>
+          IO(
+            testMetersFor(
+              registry,
+              classifier = "classifier",
+              additionalTags = Tags.empty
+            )
           )
         )
-      )
   }
 
 }

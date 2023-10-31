@@ -37,8 +37,9 @@ object Meters4s {
             case TagsReg(tagsString) if tagsString.trim.nonEmpty =>
               tagsString
                 .split(",")
-                .collect { case TagReg(key, value) =>
-                  Map(key -> value)
+                .collect {
+                  case TagReg(key, value) =>
+                    Map(key -> value)
                 }
                 .reduce(_ ++ _)
           }
@@ -47,10 +48,14 @@ object Meters4s {
       }
 
       def increaseActiveRequests(classifier: Option[String]): F[Unit] =
-        reporter.gauge(name(classifier, "active-requests"), tags(classifier)).flatMap(_.increment)
+        reporter
+          .gauge(name(classifier, "active-requests"), tags(classifier))
+          .flatMap(_.increment)
 
       def decreaseActiveRequests(classifier: Option[String]): F[Unit] =
-        reporter.gauge(name(classifier, "active-requests"), tags(classifier)).flatMap(_.decrement)
+        reporter
+          .gauge(name(classifier, "active-requests"), tags(classifier))
+          .flatMap(_.decrement)
 
       def recordHeadersTime(
           method: Method,
@@ -72,9 +77,9 @@ object Meters4s {
       ): F[Unit] = {
         val terminationTags = terminationType match {
           case Abnormal(_) => "termination" -> "abnormal"
-          case Error(_) => "termination" -> "error"
-          case Canceled => "termination" -> "cancelled"
-          case Timeout => "termination" -> "timeout"
+          case Error(_)    => "termination" -> "error"
+          case Canceled    => "termination" -> "cancelled"
+          case Timeout     => "termination" -> "timeout"
         }
 
         recordResponseTime(
@@ -91,10 +96,10 @@ object Meters4s {
       ): F[Unit] = {
         val statusTags = status.responseClass match {
           case Status.Informational => "status-code" -> "1xx"
-          case Status.Successful => "status-code" -> "2xx"
-          case Status.Redirection => "status-code" -> "3xx"
-          case Status.ClientError => "status-code" -> "4xx"
-          case Status.ServerError => "status-code" -> "5xx"
+          case Status.Successful    => "status-code" -> "2xx"
+          case Status.Redirection   => "status-code" -> "3xx"
+          case Status.ClientError   => "status-code" -> "4xx"
+          case Status.ServerError   => "status-code" -> "5xx"
         }
         val allTags = tags(classifier) ++
           Map("termination" -> "normal", statusTags) ++

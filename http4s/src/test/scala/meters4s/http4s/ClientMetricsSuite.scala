@@ -18,7 +18,9 @@ import io.micrometer.core.instrument.{MeterRegistry, Tags}
 
 class ClientMetricsSuite extends munit.CatsEffectSuite {
 
-  def resourcesWithClassifier(classifierF: Request[IO] => Option[String] = _ => None) =
+  def resourcesWithClassifier(
+      classifierF: Request[IO] => Option[String] = _ => None
+  ) =
     ResourceFunFixture {
       meterRegistryResource.evalMap { registry =>
         val config: MetricsConfig = MetricsConfig("client.")
@@ -78,7 +80,10 @@ class ClientMetricsSuite extends munit.CatsEffectSuite {
       intercept[MeterNotFoundException] {
         meterCount(
           registry,
-          Timer(s"client.${classifier}.response-time", additionalTags and Tags.of("status-code", x))
+          Timer(
+            s"client.${classifier}.response-time",
+            additionalTags and Tags.of("status-code", x)
+          )
         )
       }
     }
@@ -87,7 +92,10 @@ class ClientMetricsSuite extends munit.CatsEffectSuite {
       intercept[MeterNotFoundException] {
         meterCount(
           registry,
-          Timer(s"client.${classifier}.response-time", additionalTags and Tags.of("method", x))
+          Timer(
+            s"client.${classifier}.response-time",
+            additionalTags and Tags.of("method", x)
+          )
         )
       }
 
@@ -106,7 +114,10 @@ class ClientMetricsSuite extends munit.CatsEffectSuite {
       intercept[MeterNotFoundException] {
         meterCount(
           registry,
-          Timer(s"client.${classifier}.response-time", additionalTags and Tags.of("termination", x))
+          Timer(
+            s"client.${classifier}.response-time",
+            additionalTags and Tags.of("termination", x)
+          )
         )
       }
     }
@@ -114,7 +125,14 @@ class ClientMetricsSuite extends munit.CatsEffectSuite {
     val responseTimeTags = if (termination != "normal") {
       Tags.of("termination", termination)
     } else {
-      Tags.of("status-code", statusCode, "method", method, "termination", termination)
+      Tags.of(
+        "status-code",
+        statusCode,
+        "method",
+        method,
+        "termination",
+        termination
+      )
     }
 
     assertEquals(
@@ -196,51 +214,58 @@ class ClientMetricsSuite extends munit.CatsEffectSuite {
 
   resources.test(
     "Http client with a micrometer metrics middleware should register a 2xx response"
-  ) { case (registry, meteredClient) =>
-    meteredClient
-      .statusFromString("/ok")
-      .assertEquals(Status.Ok)
-      .flatMap(_ => IO(testMetersFor(registry)))
+  ) {
+    case (registry, meteredClient) =>
+      meteredClient
+        .statusFromString("/ok")
+        .assertEquals(Status.Ok)
+        .flatMap(_ => IO(testMetersFor(registry)))
   }
 
   resources.test(
     "Http client with a micrometer metrics middleware should register a 4xx response"
-  ) { case (registry, meteredClient) =>
-    meteredClient
-      .statusFromString("/bad-request")
-      .assertEquals(Status.BadRequest)
-      .flatMap(_ => IO(testMetersFor(registry, statusCode = "4xx")))
+  ) {
+    case (registry, meteredClient) =>
+      meteredClient
+        .statusFromString("/bad-request")
+        .assertEquals(Status.BadRequest)
+        .flatMap(_ => IO(testMetersFor(registry, statusCode = "4xx")))
   }
 
   resources.test(
     "Http client with a micrometer metrics middleware should register a 5xx response"
-  ) { case (registry, meteredClient) =>
-    meteredClient
-      .statusFromString("/internal-server-error")
-      .assertEquals(Status.InternalServerError)
-      .flatMap(_ => IO(testMetersFor(registry, statusCode = "5xx")))
+  ) {
+    case (registry, meteredClient) =>
+      meteredClient
+        .statusFromString("/internal-server-error")
+        .assertEquals(Status.InternalServerError)
+        .flatMap(_ => IO(testMetersFor(registry, statusCode = "5xx")))
 
   }
 
   resources.test(
     "Http client with a micrometer metrics middleware should register a GET request"
-  ) { case (registry, meteredClient) =>
-    meteredClient
-      .statusFromString("/ok")
-      .assertEquals(Status.Ok)
-      .flatMap(_ => IO(testMetersFor(registry, method = "get")))
+  ) {
+    case (registry, meteredClient) =>
+      meteredClient
+        .statusFromString("/ok")
+        .assertEquals(Status.Ok)
+        .flatMap(_ => IO(testMetersFor(registry, method = "get")))
   }
 
   resources.test(
     "Http client with a micrometer metrics middleware should register a POST request"
-  ) { case (registry, meteredClient) =>
-    meteredClient
-      .status(Request[IO](POST, uri"/ok"))
-      .assertEquals(Status.Ok)
-      .flatMap(_ => IO(testMetersFor(registry, method = "post")))
+  ) {
+    case (registry, meteredClient) =>
+      meteredClient
+        .status(Request[IO](POST, uri"/ok"))
+        .assertEquals(Status.Ok)
+        .flatMap(_ => IO(testMetersFor(registry, method = "post")))
   }
 
-  resources.test("Http client with a micrometer metrics middleware should register a PUT request") {
+  resources.test(
+    "Http client with a micrometer metrics middleware should register a PUT request"
+  ) {
     case (registry, meteredClient) =>
       meteredClient
         .status(Request[IO](PUT, uri"/ok"))
@@ -251,41 +276,47 @@ class ClientMetricsSuite extends munit.CatsEffectSuite {
 
   resources.test(
     "Http client with a micrometer metrics middleware should register a PATCH request"
-  ) { case (registry, meteredClient) =>
-    meteredClient
-      .status(Request[IO](PATCH, uri"/ok"))
-      .assertEquals(Status.Ok)
-      .flatMap(_ => IO(testMetersFor(registry, method = "patch")))
+  ) {
+    case (registry, meteredClient) =>
+      meteredClient
+        .status(Request[IO](PATCH, uri"/ok"))
+        .assertEquals(Status.Ok)
+        .flatMap(_ => IO(testMetersFor(registry, method = "patch")))
   }
 
   resources.test(
     "Http client with a micrometer metrics middleware should register a DELETE request"
-  ) { case (registry, meteredClient) =>
-    meteredClient
-      .status(Request[IO](DELETE, uri"/ok"))
-      .assertEquals(Status.Ok)
-      .flatMap(_ => IO(testMetersFor(registry, method = "delete")))
+  ) {
+    case (registry, meteredClient) =>
+      meteredClient
+        .status(Request[IO](DELETE, uri"/ok"))
+        .assertEquals(Status.Ok)
+        .flatMap(_ => IO(testMetersFor(registry, method = "delete")))
   }
 
   resources.test(
     "Http client with a micrometer metrics middleware should register a HEAD request"
-  ) { case (registry, meteredClient) =>
-    meteredClient
-      .status(Request[IO](HEAD, uri"/ok"))
-      .assertEquals(Status.Ok)
-      .flatMap(_ => IO(testMetersFor(registry, method = "head")))
+  ) {
+    case (registry, meteredClient) =>
+      meteredClient
+        .status(Request[IO](HEAD, uri"/ok"))
+        .assertEquals(Status.Ok)
+        .flatMap(_ => IO(testMetersFor(registry, method = "head")))
   }
 
   resources.test(
     "Http client with a micrometer metrics middleware should register a OPTIONS request"
-  ) { case (registry, meteredClient) =>
-    meteredClient
-      .status(Request[IO](OPTIONS, uri"/ok"))
-      .assertEquals(Status.Ok)
-      .flatMap(_ => IO(testMetersFor(registry, method = "options")))
+  ) {
+    case (registry, meteredClient) =>
+      meteredClient
+        .status(Request[IO](OPTIONS, uri"/ok"))
+        .assertEquals(Status.Ok)
+        .flatMap(_ => IO(testMetersFor(registry, method = "options")))
   }
 
-  resources.test("Http client with a micrometer metrics middleware should register an error") {
+  resources.test(
+    "Http client with a micrometer metrics middleware should register an error"
+  ) {
     case (registry, meteredClient) =>
       meteredClient
         .statusFromString("/error")
@@ -293,7 +324,9 @@ class ClientMetricsSuite extends munit.CatsEffectSuite {
         .flatMap(_ => IO(testMetersFor(registry, termination = "error")))
   }
 
-  resources.test("Http client with a micrometer metrics middleware should register a timeout") {
+  resources.test(
+    "Http client with a micrometer metrics middleware should register a timeout"
+  ) {
     case (registry, meteredClient) =>
       meteredClient
         .statusFromString("/timeout")
@@ -303,60 +336,82 @@ class ClientMetricsSuite extends munit.CatsEffectSuite {
 
   resourcesWithClassifier((_: Request[IO]) => Some("classifier")).test(
     "Http client with a micrometer metrics middleware should use the provided request classifier"
-  ) { case (registry, meteredClient) =>
-    meteredClient
-      .statusFromString("/ok")
-      .assertEquals(Status.Ok)
-      .flatMap(_ => IO(testMetersFor(registry, classifier = "classifier")))
+  ) {
+    case (registry, meteredClient) =>
+      meteredClient
+        .statusFromString("/ok")
+        .assertEquals(Status.Ok)
+        .flatMap(_ => IO(testMetersFor(registry, classifier = "classifier")))
   }
 
   resourcesWithClassifier((r: Request[IO]) =>
     Some(s"tagged[num:${r.uri.query.params.getOrElse("num", "")}]")
   ).test(
     "Http client with a micrometer metrics middleware should use tags provided by the request classifier"
-  ) { case (registry, meteredClient) =>
-    meteredClient
-      .statusFromString("/ok?num=one")
-      .assertEquals(Status.Ok)
-      .flatMap { _ => meteredClient.statusFromString("/ok?num=two").assertEquals(Status.Ok) }
-      .flatMap(_ =>
-        IO(testMetersFor(registry, classifier = "tagged", additionalTags = Tags.of("num", "one")))
-      )
-      .flatMap(_ =>
-        IO(testMetersFor(registry, classifier = "tagged", additionalTags = Tags.of("num", "two")))
-      )
+  ) {
+    case (registry, meteredClient) =>
+      meteredClient
+        .statusFromString("/ok?num=one")
+        .assertEquals(Status.Ok)
+        .flatMap { _ =>
+          meteredClient.statusFromString("/ok?num=two").assertEquals(Status.Ok)
+        }
+        .flatMap(_ =>
+          IO(
+            testMetersFor(
+              registry,
+              classifier = "tagged",
+              additionalTags = Tags.of("num", "one")
+            )
+          )
+        )
+        .flatMap(_ =>
+          IO(
+            testMetersFor(
+              registry,
+              classifier = "tagged",
+              additionalTags = Tags.of("num", "two")
+            )
+          )
+        )
   }
 
   resources.test(
     "Http client with a micrometer metrics middleware should only record total time and decr active requests after client.run releases"
-  ) { case (registry, meteredClient) =>
-    meteredClient
-      .run(Request[IO](uri = Uri.unsafeFromString("/ok")))
-      .use { resp =>
-        IO(assertEquals(resp.status, Status.Ok))
-          .flatMap { _ =>
-            IO(assertEquals(meterValue(registry, Gauge("client.default.active-requests")), 1d))
-          }
-          .flatMap { _ =>
-            IO(
-              assertEquals(
-                meterMaxTime(
+  ) {
+    case (registry, meteredClient) =>
+      meteredClient
+        .run(Request[IO](uri = Uri.unsafeFromString("/ok")))
+        .use { resp =>
+          IO(assertEquals(resp.status, Status.Ok))
+            .flatMap { _ =>
+              IO(
+                assertEquals(
+                  meterValue(registry, Gauge("client.default.active-requests")),
+                  1d
+                )
+              )
+            }
+            .flatMap { _ =>
+              IO(
+                assertEquals(
+                  meterMaxTime(
+                    registry,
+                    Timer("client.default.response-headers-time")
+                  ),
+                  50.milliseconds
+                )
+              )
+            }
+            .flatMap { _ =>
+              IO(
+                meterCount(
                   registry,
-                  Timer("client.default.response-headers-time")
-                ),
-                50.milliseconds
-              )
-            )
-          }
-          .flatMap { _ =>
-            IO(
-              meterCount(
-                registry,
-                Timer(s"client.default.response-time")
-              )
-            ).intercept[MeterNotFoundException]
-          }
-      }
+                  Timer(s"client.default.response-time")
+                )
+              ).intercept[MeterNotFoundException]
+            }
+        }
 
   }
 }

@@ -17,7 +17,8 @@ import io.micrometer.core.instrument.{MeterRegistry, Tags}
 object util {
 
   def stub: PartialFunction[Request[IO], IO[Response[IO]]] = {
-    case (HEAD | GET | POST | PUT | PATCH | DELETE | OPTIONS | TRACE | CONNECT) -> Root / "ok" =>
+    case (HEAD | GET | POST | PUT | PATCH | DELETE | OPTIONS | TRACE |
+        CONNECT) -> Root / "ok" =>
       Ok("200 OK")
     case _ -> Root / "bad-request" =>
       BadRequest("400 Bad Request")
@@ -29,7 +30,9 @@ object util {
       IO.raiseError[Response[IO]](new TimeoutException("request timed out"))
     case _ -> Root / "abnormal-termination" =>
       Ok("200 OK").map(
-        _.withBodyStream(Stream.raiseError[IO](new RuntimeException("Abnormal termination")))
+        _.withBodyStream(
+          Stream.raiseError[IO](new RuntimeException("Abnormal termination"))
+        )
       )
     case _ =>
       NotFound("404 Not Found")
