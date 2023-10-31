@@ -1,6 +1,6 @@
 import ReleaseTransformations._
 
-lazy val additionalSupportedScalaVersions = List("2.13.10", "2.12.17")
+lazy val additionalSupportedScalaVersions = List("2.13.12", "2.12.18")
 
 lazy val root = (project in file("."))
   .settings(
@@ -116,6 +116,17 @@ lazy val prometheus = project
     publishSettings,
     libraryDependencies ++= commonDependencies ++ Seq(
       "io.micrometer" % "micrometer-registry-prometheus" % "1.10.5"
+    )
+  )
+  .dependsOn(core)
+
+lazy val http4s = project
+  .settings(
+    name := "meters4s-http4s",
+    commonSettings,
+    publishSettings,
+    libraryDependencies ++= commonDependencies ++ Seq(
+      "org.http4s" %% "http4s-core" % "0.23.17",
     )
   )
   .dependsOn(core)

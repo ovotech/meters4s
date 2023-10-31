@@ -46,7 +46,7 @@ For comprehensive API documentation check [the scaladoc](https://ovotech.github.
 A simple usage example for incrementing a counter, backed by a Micrometer `SimpleMeterRegistry`:
 
 ```scala
-import com.ovoenergy.meters4s.{Reporter, MetricsConfig}
+import meters4s.{Reporter, MetricsConfig}
 import cats.effect.IO
 
 val config = MetricsConfig()
@@ -60,8 +60,8 @@ for {
 ### With Datadog
 
 ```scala
-import com.ovoenergy.meters4s.{MetricsConfig, Reporter}
-import com.ovoenergy.meters4s.datadog.{DataDog, DataDogConfig}
+import meters4s.{MetricsConfig, Reporter}
+import meters4s.datadog.{DataDog, DataDogConfig}
 import cats.effect.IO
 
 val datadog =
@@ -81,8 +81,8 @@ import cats.effect._
 import cats.effect.std.Console
 import cats.effect.syntax.all._
 import cats.syntax.all._
-import com.ovoenergy.meter4s.prometheus._
-import com.ovoenergy.meters4s.{MetricsConfig, Reporter}
+import meter4s.prometheus._
+import meters4s.{MetricsConfig, Reporter}
 import io.micrometer.core.instrument.binder.system.ProcessorMetrics
 
 import scala.concurrent.duration._
